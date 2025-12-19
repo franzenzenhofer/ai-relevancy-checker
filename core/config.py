@@ -342,6 +342,6 @@ def get_config() -> Config:
     if not config._config_loaded:
         raise RuntimeError(
             "Config not loaded. Use --config to specify a config file, "
-            "e.g.: python run.py --config configs/karriere.at.config.json"
+            "e.g.: python run.py --config configs/mysite.config.json"
         )
     return config

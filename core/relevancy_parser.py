@@ -4,7 +4,7 @@ import re
 from typing import List, Optional, Tuple
 from .config import config
 
-# Regex pattern to match domains in text (e.g., wien.gv.at, google.com, maps.google.com)
+# Regex pattern to match domains in text (e.g., example.com, google.com, maps.google.com)
 DOMAIN_PATTERN = re.compile(
     r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}\b'
 )

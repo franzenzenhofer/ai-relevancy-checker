@@ -133,18 +133,18 @@ python run.py -c configs/mysite.config.json -q "example query" --debug
 
 The tool asks AI to naturally answer your search query, then checks if your domain/brand appears in the response text.
 
-**Example Query**: "jobs in vienna"
-**AI Answer**: "You can find jobs in Vienna on karriere.at, Indeed, and LinkedIn..."
-**Result**: karriere.at = **VISIBLE** in answer
+**Example Query**: "best pizza restaurants"
+**AI Answer**: "You can find great pizza at pizzahut.com, dominos.com, and local restaurants..."
+**Result**: If your domain is pizzahut.com = **VISIBLE** in answer
 
 ### 2. Domain Ranking
 > "When asked for relevant websites, does AI recommend yours?"
 
 The tool asks: "What are the 10 most relevant domains for this query?" and checks your position.
 
-**Example Query**: "jobs in vienna"
-**AI Response**: `["indeed.com", "karriere.at", "linkedin.com", ...]`
-**Result**: karriere.at = **Rank #2**
+**Example Query**: "best pizza restaurants"
+**AI Response**: `["yelp.com", "pizzahut.com", "tripadvisor.com", ...]`
+**Result**: If your domain is pizzahut.com = **Rank #2**
 
 ### Key Metrics in Reports
 

@@ -3,8 +3,8 @@
 AI Relevancy Checker - Check brand visibility in AI responses (OpenAI & Gemini)
 
 Usage:
-    python run.py --config configs/karriere.at.config.json --max-queries 100
-    python run.py --config configs/wien.gv.at.config.json --max-queries 50 --desktop
+    python run.py --config configs/example.config.json --max-queries 100
+    python run.py --config configs/mysite.config.json --max-queries 50 --desktop
 """
 import argparse
 import sys
@@ -24,10 +24,10 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python run.py -c configs/karriere.at.config.json -n 100
-  python run.py -c configs/wien.gv.at.config.json -n 50 --desktop
-  python run.py -c configs/karriere.at.config.json --single-query "jobs wien"
-  python run.py -c configs/karriere.at.config.json --list-runs
+  python run.py -c configs/mysite.config.json -n 100
+  python run.py -c configs/mysite.config.json -n 50 --desktop
+  python run.py -c configs/mysite.config.json --single-query "example query"
+  python run.py -c configs/mysite.config.json --list-runs
 """
     )
     # Required
