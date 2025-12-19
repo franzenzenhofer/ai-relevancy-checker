@@ -228,18 +228,69 @@ Get keys from:
 - OpenAI: https://platform.openai.com/api-keys
 - Gemini: https://aistudio.google.com/app/apikey
 
-### 2. Google Search Console
+### 2. Google Search Console (GSC) Authentication
 
-You need OAuth credentials to access GSC data.
+You need OAuth credentials to access your GSC data. This requires two files:
+- `client_secret.json` - Your OAuth app credentials (you create this once)
+- `token.json` - Your authorization token (generated on first run)
+
+#### Step-by-Step Setup:
+
+**A. Create a Google Cloud Project:**
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project (or select existing)
-3. Enable "Search Console API"
-4. Create OAuth 2.0 credentials (Desktop app)
-5. Download `client_secret.json`
-6. Place in **parent directory** of this project
+2. Click "Select a project" → "New Project"
+3. Name it (e.g., "AI Relevancy Checker") → Create
+4. Wait for project creation to complete
 
-First run will open browser for OAuth consent. Token saved to `token.json`.
+**B. Enable the Search Console API:**
+
+1. In your project, go to "APIs & Services" → "Library"
+2. Search for "Google Search Console API"
+3. Click on it → Click "Enable"
+
+**C. Configure OAuth Consent Screen:**
+
+1. Go to "APIs & Services" → "OAuth consent screen"
+2. Select "External" → Create
+3. Fill in required fields:
+   - App name: "AI Relevancy Checker"
+   - User support email: your email
+   - Developer contact: your email
+4. Click "Save and Continue"
+5. On "Scopes" page, click "Add or Remove Scopes"
+6. Find and select: `https://www.googleapis.com/auth/webmasters.readonly`
+7. Click "Update" → "Save and Continue"
+8. On "Test users" page, click "Add Users"
+9. Add your Google account email → Save and Continue
+10. Review and click "Back to Dashboard"
+
+**D. Create OAuth Credentials:**
+
+1. Go to "APIs & Services" → "Credentials"
+2. Click "Create Credentials" → "OAuth client ID"
+3. Application type: **Desktop app**
+4. Name: "AI Relevancy Checker Desktop"
+5. Click "Create"
+6. Click "Download JSON" on the popup
+7. **Rename** the downloaded file to `client_secret.json`
+8. **Move** it to the **parent directory** of this project
+
+**E. First Run - Authorization:**
+
+1. Run the tool: `python run.py -c configs/mysite.config.json -n 1`
+2. A browser window will open asking you to sign in to Google
+3. Select your Google account (must have access to the GSC property)
+4. Click "Continue" on the "Google hasn't verified this app" warning
+5. Grant access to Search Console data
+6. The browser will show "The authentication flow has completed"
+7. A `token.json` file is created in the parent directory
+
+**Troubleshooting:**
+
+- **"Access blocked" error**: Make sure you added yourself as a test user in OAuth consent screen
+- **"Property not found" error**: Verify your `site_url` in config matches exactly what's in GSC
+- **Token expired**: Delete `token.json` and run again to re-authenticate
 
 ### 3. File Structure
 
