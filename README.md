@@ -2,405 +2,269 @@
 
 **Measure your brand's visibility in AI-generated answers from ChatGPT and Google Gemini.**
 
-This tool fetches your top search queries from Google Search Console, asks AI models to answer them, and measures whether your brand/domain appears in the responses.
+Fetches your top search queries from Google Search Console, asks AI models to answer them, and measures whether your brand appears in the responses.
 
-## Key Features
+## Table of Contents
 
-- **Dual AI Analysis**: Tests both OpenAI (ChatGPT) and Google Gemini
-- **Two Visibility Metrics**: Answer mentions + Domain ranking
-- **GSC Integration**: Automatically fetches your top queries by clicks
-- **Interactive Reports**: HTML reports with charts and filters
-- **CSV Export**: Raw data for further analysis
-- **Config-Driven**: Works with any website via JSON config
-- **Desktop Output**: `--desktop` flag copies reports directly to your Desktop
+- [Quick Start](#quick-start)
+- [Setup](#setup)
+  - [Requirements](#requirements)
+  - [API Keys](#api-keys)
+  - [Google Search Console Auth](#google-search-console-authentication)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [CLI Reference](#cli-reference)
+- [How It Works](#how-it-works)
+  - [Metrics](#metrics)
+- [Output](#output)
+- [Security](#security)
 
 ---
 
 ## Quick Start
 
+> **Note:** This tool requires Google Search Console access. Complete [GSC Authentication](#google-search-console-authentication) setup before running.
+
 ```bash
-# 1. Clone and setup
+# 1. Clone and install
 git clone https://github.com/franzenzenhofer/ai-relevancy-checker.git
 cd ai-relevancy-checker
-python -m venv .venv
-source .venv/bin/activate
-pip install openai google-generativeai google-auth-oauthlib
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
-# 2. Create .env with your API keys
-echo "OPENAI_API_KEY=sk-your-key-here" > .env
-echo "GEMINI_API_KEY=AIza-your-key-here" >> .env
-
-# 3. Create your config (copy and edit example)
+# 2. Configure
 cp configs/example.config.json configs/mysite.config.json
-# Edit configs/mysite.config.json with your site details
+# Edit mysite.config.json with your site details
 
-# 4. Run (requires GSC setup - see below)
-python run.py -c configs/mysite.config.json -n 100 --desktop
-```
+# 3. Add API keys to .env
+echo "OPENAI_API_KEY=sk-your-key" > .env
+echo "GEMINI_API_KEY=AIza-your-key" >> .env
 
----
+# 4. Set up GSC auth (see instructions below)
+# Place client_secret.json in parent directory
 
-## Usage
-
-### Basic Commands
-
-```bash
-# Run with 100 queries, output to Desktop
-python run.py -c configs/mysite.config.json -n 100 --desktop
-
-# Test a single query
-python run.py -c configs/mysite.config.json -q "your search query" --debug
-
-# List previous runs
-python run.py -c configs/mysite.config.json --list-runs
-
-# Regenerate report from existing data (no API calls)
-python run.py -c configs/mysite.config.json --regenerate abc123 --desktop
-```
-
-### CLI Options - Complete Reference
-
-#### Required
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--config` | `-c` | **Required.** Path to config file |
-
-#### Query Selection
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--max-queries` | `-n` | Number of queries to process (default: from config) |
-| `--offset` | | Skip first N queries from GSC |
-| `--days` | | Days of GSC data to fetch (default: 90) |
-
-#### Output Control
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--desktop` | `-d` | Copy report & CSV to Desktop |
-| `--name` | | Custom name for output files (e.g., "mysite-dec12") |
-| `--presentation` | `-pres` | Also generate HTML slide presentation |
-
-#### Run Management
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--list-runs` | | List all runs with ID, status, progress |
-| `--run-id` | | **ADD** queries to existing run (accumulates results) |
-| `--continue-run` | | **RESUME** incomplete run |
-| `--regenerate` | | **REGENERATE** report from stored data (NO API calls!) |
-| `--report-only` | | Alias for `--regenerate` |
-| `--retry-failed` | | Retry only failed/missing queries for a run |
-
-#### Debug & Testing
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--single-query` | `-q` | Test one query in debug mode |
-| `--language` | | Language override for single query: `de` or `en` |
-| `--debug` | | Enable verbose debug logging |
-
-#### Provider & Concurrency
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--providers` | `-p` | Providers: `openai`, `gemini`, or `openai,gemini` |
-| `--max-query-workers` | | Max concurrent queries (default: 50) |
-| `--max-provider-workers` | | Per-query concurrency for answer/domain (default: 2) |
-| `--prompt-concurrency` | | Concurrent prompt generations (default: 8) |
-| `--request-delay` | | Delay between API requests in seconds |
-
-### Common Workflows
-
-```bash
-# New run with 100 queries
+# 5. Run
 python run.py -c configs/mysite.config.json -n 100 -d
-
-# Regenerate report after code changes (NO API CALLS)
-python run.py -c configs/mysite.config.json --regenerate abc123 -d
-
-# Add 50 more queries to existing run (starting at offset 100)
-python run.py -c configs/mysite.config.json --run-id abc123 -n 50 --offset 100 -d
-
-# Retry failed queries
-python run.py -c configs/mysite.config.json --retry-failed abc123 -d
-
-# Debug single query
-python run.py -c configs/mysite.config.json -q "example query" --debug
 ```
 
 ---
 
-## What It Measures
+## Setup
 
-### 1. Answer Visibility
-> "Does the AI mention your brand in its answer?"
+### Requirements
 
-The tool asks AI to naturally answer your search query, then checks if your domain/brand appears in the response text.
+- Python 3.10+
+- OpenAI API key ([get one](https://platform.openai.com/api-keys))
+- Google Gemini API key ([get one](https://aistudio.google.com/app/apikey))
+- Google Search Console property access
 
-**Example Query**: "best pizza restaurants"
-**AI Answer**: "You can find great pizza at pizzahut.com, dominos.com, and local restaurants..."
-**Result**: If your domain is pizzahut.com = **VISIBLE** in answer
+### API Keys
 
-### 2. Domain Ranking
-> "When asked for relevant websites, does AI recommend yours?"
+Create `.env` in project root:
 
-The tool asks: "What are the 10 most relevant domains for this query?" and checks your position.
+```
+OPENAI_API_KEY=sk-proj-...
+GEMINI_API_KEY=AIza...
+```
 
-**Example Query**: "best pizza restaurants"
-**AI Response**: `["yelp.com", "pizzahut.com", "tripadvisor.com", ...]`
-**Result**: If your domain is pizzahut.com = **Rank #2**
+### Google Search Console Authentication
 
-### Key Metrics in Reports
+You need two files for GSC access:
+- `client_secret.json` - OAuth credentials (create once)
+- `token.json` - Auth token (auto-generated on first run)
 
-| Metric | Description |
-|--------|-------------|
-| **Answer Visible %** | Percentage of queries where brand appears in answer |
-| **Top-5 %** | Percentage of queries where domain ranks #1-5 |
-| **Top-10 %** | Percentage of queries where domain ranks #1-10 |
-| **Avg Rank** | Average ranking position when present |
+<details>
+<summary><strong>Step-by-step GSC setup (click to expand)</strong></summary>
+
+#### A. Create Google Cloud Project
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create new project → Name it "AI Relevancy Checker"
+
+#### B. Enable Search Console API
+
+1. Go to "APIs & Services" → "Library"
+2. Search "Google Search Console API" → Enable
+
+#### C. Configure OAuth Consent
+
+1. Go to "APIs & Services" → "OAuth consent screen"
+2. Select "External" → Create
+3. Fill: App name, support email, developer email
+4. Add scope: `https://www.googleapis.com/auth/webmasters.readonly`
+5. Add yourself as test user
+
+#### D. Create Credentials
+
+1. Go to "APIs & Services" → "Credentials"
+2. Create OAuth client ID → **Desktop app**
+3. Download JSON → Rename to `client_secret.json`
+4. Move to **parent directory** of this project
+
+#### E. First Run
+
+```bash
+python run.py -c configs/mysite.config.json -n 1
+```
+Browser opens → Sign in → Grant access → `token.json` created automatically.
+
+</details>
+
+**Troubleshooting:**
+- "Access blocked": Add yourself as test user in OAuth consent screen
+- "Property not found": `site_url` must match GSC exactly
+- Token expired: Delete `token.json`, run again
+
+### File Structure
+
+```
+parent-directory/
+├── client_secret.json      # GSC OAuth (gitignored)
+├── token.json              # Auto-generated (gitignored)
+└── ai-relevancy-checker/
+    ├── .env                # API keys (gitignored)
+    ├── configs/mysite.config.json  # Your config (gitignored)
+    ├── reports/            # Output (gitignored)
+    └── exports/            # CSV output (gitignored)
+```
 
 ---
 
 ## Configuration
 
-### Creating Your Config File
-
-Config files live in `configs/`. Start with the example:
-
-```bash
-cp configs/example.config.json configs/mysite.config.json
-```
-
-### Config Structure
+Copy and edit `configs/example.config.json`:
 
 ```json
 {
   "site_url": "https://www.example.com/",
   "domain": "example.com",
   "brand_names": ["example.com", "www.example.com", "Example Inc"],
-
-  "user_city": "Vienna",
-  "user_city_en": "Vienna",
-  "user_country": "Österreich",
+  "user_country": "Austria",
   "user_country_en": "Austria",
-
-  "language_indicators": {
-    "de": ["ä", "ö", "ü", "ß", "wien", "österreich"]
-  },
-  "force_language": "de",
-
-  "prompt_mode": "ai",
-  "default_providers": ["openai", "gemini"],
-  "gsc_days": 90,
-  "max_query_workers": 50,
-  "max_provider_workers": 2,
-  "prompt_concurrency": 8
+  "user_city": "Vienna"
 }
 ```
 
-### Config Fields
-
 | Field | Required | Description |
-|-------|----------|-------------|
-| `site_url` | Yes | Your GSC property URL |
+|-------|:--------:|-------------|
+| `site_url` | Yes | GSC property URL (must match exactly) |
 | `domain` | Yes | Domain to check visibility for |
-| `brand_names` | Yes | All variations to detect (domain, brand name, etc.) |
-| `user_country` | Yes | Country for AI prompts (local language) |
-| `user_country_en` | Yes | Country for AI prompts (English) |
+| `brand_names` | Yes | All name variations to detect |
+| `user_country` | Yes | Country for prompts (local language) |
+| `user_country_en` | Yes | Country for prompts (English) |
 | `user_city` | No | City for location context |
-| `force_language` | No | Override language detection (`de`, `en`) |
-| `gsc_days` | No | Days of GSC data to fetch (default: 90) |
-| `max_query_workers` | No | Concurrent queries processed (default: 50) |
-| `max_provider_workers` | No | Per-query concurrency for answer/domain (default: 2) |
-| `prompt_concurrency` | No | Concurrent prompt generations (default: 8) |
-| `default_providers` | No | Which AI to use (default: both) |
+| `force_language` | No | Override detection: `de`, `en` |
+| `gsc_days` | No | Days of data (default: 90) |
 
 ---
 
-## Setup
-
-### 1. API Keys
-
-Create `.env` file in project root:
+## Usage
 
 ```bash
-OPENAI_API_KEY=sk-proj-...
-GEMINI_API_KEY=AIza...
+# Basic run (100 queries, copy to Desktop)
+python run.py -c configs/mysite.config.json -n 100 -d
+
+# Test single query
+python run.py -c configs/mysite.config.json -q "your query" --debug
+
+# Regenerate report (no API calls)
+python run.py -c configs/mysite.config.json --regenerate RUN_ID -d
+
+# Add queries to existing run
+python run.py -c configs/mysite.config.json --run-id RUN_ID -n 50 --offset 100
+
+# Retry failed queries
+python run.py -c configs/mysite.config.json --retry-failed RUN_ID
 ```
 
-Get keys from:
-- OpenAI: https://platform.openai.com/api-keys
-- Gemini: https://aistudio.google.com/app/apikey
+### CLI Reference
 
-### 2. Google Search Console (GSC) Authentication
-
-You need OAuth credentials to access your GSC data. This requires two files:
-- `client_secret.json` - Your OAuth app credentials (you create this once)
-- `token.json` - Your authorization token (generated on first run)
-
-#### Step-by-Step Setup:
-
-**A. Create a Google Cloud Project:**
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Click "Select a project" → "New Project"
-3. Name it (e.g., "AI Relevancy Checker") → Create
-4. Wait for project creation to complete
-
-**B. Enable the Search Console API:**
-
-1. In your project, go to "APIs & Services" → "Library"
-2. Search for "Google Search Console API"
-3. Click on it → Click "Enable"
-
-**C. Configure OAuth Consent Screen:**
-
-1. Go to "APIs & Services" → "OAuth consent screen"
-2. Select "External" → Create
-3. Fill in required fields:
-   - App name: "AI Relevancy Checker"
-   - User support email: your email
-   - Developer contact: your email
-4. Click "Save and Continue"
-5. On "Scopes" page, click "Add or Remove Scopes"
-6. Find and select: `https://www.googleapis.com/auth/webmasters.readonly`
-7. Click "Update" → "Save and Continue"
-8. On "Test users" page, click "Add Users"
-9. Add your Google account email → Save and Continue
-10. Review and click "Back to Dashboard"
-
-**D. Create OAuth Credentials:**
-
-1. Go to "APIs & Services" → "Credentials"
-2. Click "Create Credentials" → "OAuth client ID"
-3. Application type: **Desktop app**
-4. Name: "AI Relevancy Checker Desktop"
-5. Click "Create"
-6. Click "Download JSON" on the popup
-7. **Rename** the downloaded file to `client_secret.json`
-8. **Move** it to the **parent directory** of this project
-
-**E. First Run - Authorization:**
-
-1. Run the tool: `python run.py -c configs/mysite.config.json -n 1`
-2. A browser window will open asking you to sign in to Google
-3. Select your Google account (must have access to the GSC property)
-4. Click "Continue" on the "Google hasn't verified this app" warning
-5. Grant access to Search Console data
-6. The browser will show "The authentication flow has completed"
-7. A `token.json` file is created in the parent directory
-
-**Troubleshooting:**
-
-- **"Access blocked" error**: Make sure you added yourself as a test user in OAuth consent screen
-- **"Property not found" error**: Verify your `site_url` in config matches exactly what's in GSC
-- **Token expired**: Delete `token.json` and run again to re-authenticate
-
-### 3. File Structure
-
-```
-parent-directory/
-├── client_secret.json    # OAuth credentials (gitignored)
-├── token.json            # Generated after first auth (gitignored)
-└── ai-relevancy-checker/
-    ├── run.py
-    ├── configs/
-    │   ├── example.config.json  # Template config
-    │   └── mysite.config.json   # Your config (gitignored)
-    ├── core/
-    ├── reports/          # Generated HTML reports (gitignored)
-    ├── exports/          # Generated CSV files (gitignored)
-    └── .env              # API keys (gitignored)
-```
-
----
-
-## Output
-
-### HTML Report
-
-Interactive report includes:
-- **KPI Summary**: Answer visibility %, Top-5 %, Top-10 % per AI
-- **Charts**: Pie charts, bar comparisons, visibility breakdown
-- **Query Table**: Full results with filters and sorting
-- **Methodology**: Complete transparency on prompts used
-
-### CSV Export
-
-All data in flat format for analysis:
-```
-run_id, query_text, hypothetical_prompt, clicks, impressions,
-openai_answer_visible, openai_rank, openai_domains,
-gemini_answer_visible, gemini_rank, gemini_domains, ...
-```
-
-### Desktop Output
-
-Use `--desktop` flag to automatically copy both report and CSV to your Desktop folder.
+| Option | Short | Description |
+|--------|:-----:|-------------|
+| `--config` | `-c` | Config file path **(required)** |
+| `--max-queries` | `-n` | Number of queries to process |
+| `--desktop` | `-d` | Copy output to Desktop |
+| `--single-query` | `-q` | Test one query |
+| `--debug` | | Verbose logging |
+| `--regenerate` | | Regenerate report from stored data |
+| `--run-id` | | Add to existing run |
+| `--continue-run` | | Resume incomplete run |
+| `--retry-failed` | | Retry failed queries |
+| `--list-runs` | | Show all runs |
+| `--providers` | `-p` | `openai`, `gemini`, or both |
+| `--offset` | | Skip first N queries |
+| `--days` | | Days of GSC data |
+| `--presentation` | | Generate HTML slides |
 
 ---
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│    GSC      │────▶│   Prompt    │────▶│    LLM      │
-│  Top 100    │     │  Generator  │     │   OpenAI    │
-│  Queries    │     │ (Unbiased)  │     │   Gemini    │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                               │
-                    ┌─────────────┐            │
-                    │   Report    │◀───────────┘
-                    │  Generator  │
-                    └─────────────┘
+GSC Queries → Prompt Generator → LLMs (OpenAI + Gemini) → Report
+                (unbiased)           ↓
+                              Brand Detection
 ```
 
-1. **Fetch Queries**: Gets top queries by clicks from GSC (up to 25,000 rows)
-2. **Generate Prompts**: AI creates natural user questions (unbiased, no brand info)
-3. **Query LLMs**: Asks both OpenAI and Gemini to answer + list relevant domains
-4. **Analyze Results**: Checks for brand presence in answers and rankings
-5. **Generate Reports**: Creates HTML report with charts + CSV export
+1. **Fetch** top queries by clicks from GSC
+2. **Generate** natural prompts (AI doesn't know your brand)
+3. **Query** both OpenAI and Gemini
+4. **Detect** brand in answers + domain rankings
+5. **Report** HTML dashboard + CSV export
 
-### Unbiased Prompts
+### Metrics
 
-**Critical**: The prompt generator does NOT know your target domain. This ensures unbiased measurement. Prompts are generated based only on the search query and user location.
+| Metric | What it measures |
+|--------|------------------|
+| **Answer Visibility** | Brand mentioned in AI's answer text |
+| **Domain Rank** | Position 1-10 when AI lists relevant sites |
+| **Top-5 %** | How often you rank #1-5 |
+| **Top-10 %** | How often you rank #1-10 |
 
----
+**Example:**
+- Query: "best pizza restaurants"
+- AI Answer: "Try pizzahut.com, dominos.com..."
+- If you're pizzahut.com → **Visible in answer**
+- AI Domain List: `["yelp.com", "pizzahut.com", ...]`
+- If you're pizzahut.com → **Rank #2**
 
-## Models Used
+### Models
 
 | Purpose | OpenAI | Gemini |
 |---------|--------|--------|
-| Answer Generation | gpt-5-mini | gemini-flash-latest |
-| Prompt Generation | gpt-5-nano | - |
-| Domain Ranking | gpt-5-mini | gemini-flash-latest |
+| Answers | gpt-5-mini | gemini-flash-latest |
+| Prompts | gpt-5-nano | - |
 
-Configurable via config file (`openai_model`, `openai_prompt_model`, `gemini_model`).
+Configurable via `openai_model`, `gemini_model` in config.
 
 ---
 
-## Requirements
+## Output
 
-- Python 3.10+
-- OpenAI API key
-- Google Gemini API key
-- Google Search Console access
+**HTML Report** - Interactive dashboard with:
+- KPI cards (visibility %, rankings)
+- Charts (pie, bar, breakdown)
+- Query table with filters
+- Methodology transparency
 
-### Python Packages
-
-```bash
-pip install openai google-generativeai google-auth-oauthlib
+**CSV Export** - Raw data for analysis:
+```
+query, prompt, clicks, openai_visible, openai_rank, gemini_visible, gemini_rank...
 ```
 
+Use `-d` / `--desktop` to auto-copy to Desktop.
+
 ---
 
-## Security Notes
+## Security
 
-This tool is designed for public release. Sensitive files are gitignored:
-
+Gitignored (never committed):
 - `.env` - API keys
-- `configs/*.config.json` - Client-specific configs (except `example.config.json`)
-- `token.json`, `client_secret.json` - Google OAuth credentials
-- `results/`, `reports/`, `exports/` - Generated output data
-- `state/`, `logs/` - Runtime state
+- `configs/*.config.json` - Your configs
+- `client_secret.json`, `token.json` - GSC credentials
+- `results/`, `reports/`, `exports/`, `state/`, `logs/`
 
-**Before contributing**: Ensure no sensitive data is committed.
+Only `configs/example.config.json` is committed.
 
 ---
 
@@ -410,6 +274,4 @@ MIT
 
 ---
 
-## Author
-
-Built by Franz Enzenhofer with Claude Code.
+Built by [Franz Enzenhofer](https://github.com/franzenzenhofer) with [Claude Code](https://claude.ai/code).
