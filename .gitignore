@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output directories
+results/
+reports/
+exports/
+logs/
+state/
+
+# Client configurations (contain business-sensitive GSC URLs and brand data)
+# ONLY example configs should be committed
+configs/
+!configs/example.config.json
+
+# Sensitive files
+*.token.json
+token.json
+client_secret*.json
+
+# Google OAuth credentials
+credentials.json
+client_id.json
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
