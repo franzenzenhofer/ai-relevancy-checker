@@ -12,6 +12,10 @@ ENV/
 .env
 .env.*
 
+# API key files (never commit - repo is public)
+.openrouter_key
+*.key
+
 # IDE
 .idea/
 .vscode/

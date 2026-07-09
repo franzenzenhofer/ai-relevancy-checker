@@ -9,6 +9,7 @@ from .report_styles import get_report_styles
 from .report_header import render_header, render_methodology
 from .report_kpi import render_kpi_summary, generate_kpi_cards
 from .report_charts_section import render_charts_section
+from .report_comparison import render_comparison_section
 from .report_charts import get_chartjs_cdn
 from .report_rows import render_query_row, render_table_header
 from .report_table import get_table_javascript
@@ -61,6 +62,7 @@ class ReportGenerator:
 <div class="report">
 {render_header(self.domain, ts, len(openai_results), self.run_id)}
 <section class="section"><h2>{summary_heading}</h2>{render_kpi_summary(kpis, cards)}</section>
+{render_comparison_section(kpis, openai_results, gemini_results)}
 {render_charts_section(kpis, openai_sorted, gemini_map, cards)}
 {render_methodology(self.domain, system_context, self.run_id, self.offset, self.max_queries, self.cli_command)}
 <section class="section"><h2>{detail_heading}</h2>

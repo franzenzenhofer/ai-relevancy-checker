@@ -17,7 +17,8 @@ from .logger import get_logger
 def run_all_checks(
     packets: List[PromptPacket], openai, gemini, engine: RelevancyEngine,
     gen: PromptGenerator, state: RunState, state_mgr: RunStateManager, store: ResultStore,
-    providers: List[str], debug: bool = False
+    providers: List[str], debug: bool = False,
+    on_progress=None,
 ) -> Tuple[List[QueryResult], List[QueryResult]]:
     """Run all evaluations with parallel processing."""
     openai_res, gemini_res = [], []
@@ -127,6 +128,9 @@ def run_all_checks(
                     completed += 1
                     progress = completed
                     last_progress_time = time.time()
+
+                if on_progress:
+                    on_progress(progress, total, pkt.query_text)
 
                 o_err_text = "" if o_err in (None, "off") else f"ERR:{o_err}"
                 g_err_text = "" if g_err in (None, "off") else f"ERR:{g_err}"

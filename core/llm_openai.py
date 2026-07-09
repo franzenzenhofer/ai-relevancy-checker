@@ -2,6 +2,7 @@
 import json
 from typing import Optional
 from .config import config
+from .config_loader import get_env_key
 from .llm_base import LLMClient, LLMResponse, rate_limit_delay
 
 def get_openai_prompt_system(location_clause: str, location_phrase: str) -> str:
@@ -17,10 +18,16 @@ class OpenAIClient(LLMClient):
         if not self.api_key:
             raise ValueError("OpenAI API key not provided")
         from openai import OpenAI
-        self.client = OpenAI(api_key=self.api_key)
+        # OPENAI_BASE_URL (.env or environment) routes to an OpenAI-compatible
+        # gateway such as OpenRouter; model names must match that gateway.
+        base_url = get_env_key("OPENAI_BASE_URL")
+        self.client = OpenAI(api_key=self.api_key, base_url=base_url) \
+            if base_url else OpenAI(api_key=self.api_key)
         self.model = config.openai_model
         self.prompt_model = config.openai_prompt_model
-        print(f"OpenAI client initialized with model: {self.model} (prompt model: {self.prompt_model})")
+        via = f" via {base_url}" if base_url else ""
+        print(f"OpenAI client initialized with model: {self.model} "
+              f"(prompt model: {self.prompt_model}){via}")
 
     def generate_answer(self, prompt: str, system_context: str) -> LLMResponse:
         """Generate answer using OpenAI."""

@@ -60,11 +60,18 @@ class GeminiClient(LLMClient):
 
     def _safe_get_text(self, response) -> str:
         try:
-            return response.text if response.text else ""
+            if response.text:
+                return response.text
         except ValueError:
-            if response.candidates and response.candidates[0].content.parts:
-                return response.candidates[0].content.parts[0].text
-            return "[Response blocked or empty]"
+            pass
+        # Thinking models return thought parts before (or instead of) text
+        # parts; response.text raises on them. Join real text parts only.
+        if response.candidates and response.candidates[0].content.parts:
+            texts = [p.text for p in response.candidates[0].content.parts
+                     if getattr(p, "text", None) and not getattr(p, "thought", False)]
+            if texts:
+                return "".join(texts)
+        return "[Response blocked or empty]"
 
     def _get_token_count(self, response) -> int:
         if hasattr(response, "usage_metadata") and response.usage_metadata:
@@ -74,8 +81,11 @@ class GeminiClient(LLMClient):
     def ping(self) -> str:
         """Minimal request to validate API/key."""
         rate_limit_delay()
+        # No output cap: thinking models (gemini-flash-latest) burn hundreds of
+        # tokens on internal reasoning first; any small cap yields an empty
+        # response and a false-negative healthcheck. A ping costs ~a cent max.
         response = self.model.generate_content(
             "Respond with OK",
-            generation_config={"max_output_tokens": 4, "temperature": 0.0},
+            generation_config={"temperature": 0.0},
         )
         return self._safe_get_text(response).strip()

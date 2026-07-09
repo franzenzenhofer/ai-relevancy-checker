@@ -184,6 +184,12 @@ class Config:
     report_truncate_length: int = 250
     domain_match_strategy: str = "exact"  # exact | subdomain
 
+    # Year-over-year comparison (optional): path to a previous run's exported
+    # data CSV (same schema as csv_exporter) plus human labels for the two runs.
+    comparison_csv: Optional[str] = None
+    comparison_label: str = ""            # label for the previous run, e.g. "Dez 2025"
+    comparison_current_label: str = ""    # label for the current run, e.g. "Jul 2026"
+
     # State tracking
     _config_loaded: bool = field(default=False, repr=False)
     _config_path: Optional[Path] = field(default=None, repr=False)
@@ -286,6 +292,7 @@ class Config:
             "domain_match_strategy", "default_language",
             "debug_default_clicks", "debug_default_impressions", "debug_default_page_url",
             "max_query_workers", "max_provider_workers", "prompt_concurrency",
+            "comparison_csv", "comparison_label", "comparison_current_label",
         }
         for key, value in overrides.items():
             if key.startswith("_"):

@@ -1,0 +1,14 @@
+.venv/
+.env
+.git/
+.DS_Store
+__pycache__/
+*.pyc
+results/
+exports/
+reports/
+state/
+logs/
+configs/
+*.md
+AI_STUDIO_PROMPT.md

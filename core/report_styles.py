@@ -93,6 +93,31 @@ mark.target-hit{background:var(--highlight);color:var(--primary);padding:0 3px}
 .expand-btn:hover{background:#2563eb}
 .collapsible-text{font-size:12px}
 .text-truncated,.text-full{display:inline}
+
+/* ===== PRINT / PDF ===== keep blocks intact across page breaks */
+@media print{
+  @page{size:A4;margin:12mm}
+  html,body{background:#fff}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .report{max-width:none;margin:0;padding:0}
+  /* Interactive-only controls are dead weight on paper */
+  .table-controls{display:none !important}
+  /* Never split a self-contained block across two pages */
+  .section{break-inside:auto;box-shadow:none}
+  .report-header,.intro-box,.chart-legend,.finding-section,.data-source-section,
+  .kpi-box,.data-kpi,.chart-container,.chart-container-full,.legend-item{break-inside:avoid}
+  .kpi-row,.data-kpi-row,.legend-items{break-inside:avoid}
+  .charts-grid,.charts-grid-summary{break-inside:auto}
+  /* Headings stay with the content that follows them */
+  h1,h2,h3,h4{break-after:avoid}
+  h2{break-before:auto}
+  /* Detailed results table: repeat header, keep each row whole */
+  .query-table thead{display:table-header-group}
+  .query-table tr{break-inside:avoid}
+  .query-table th{position:static}
+  /* Expanded answer text can be long - allow it to flow rather than shove a huge gap */
+  .full-text,.collapsible-text{break-inside:auto}
+}
 """
 
 
