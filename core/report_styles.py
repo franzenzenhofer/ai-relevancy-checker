@@ -105,9 +105,20 @@ mark.target-hit{background:var(--highlight);color:var(--primary);padding:0 3px}
   .report{max-width:none;margin:0;padding:0}
   /* Interactive-only controls are dead weight on paper */
   .table-controls{display:none !important}
+
+  /* FLATTEN the box-in-box-in-box chrome: the page margin already IS the
+     outer box. Container wrappers lose their border/shadow/background/padding
+     so content spans the full page width and stops wasting whitespace.
+     Only the small colour-coded KPI/rank boxes (which carry meaning) keep
+     their frame. */
+  .section{padding:0;border:none !important;box-shadow:none;background:none;margin:0 0 0.6rem}
+  .intro-box,.data-source-section,.finding-section,.finding-explanation{
+    padding:0;border:none !important;background:none !important;margin:0 0 0.5rem}
+  .report-header{padding:0.3rem 0;border:none !important;border-bottom:2px solid var(--border) !important;margin-bottom:0.5rem}
+  h2{margin-bottom:0.4rem;padding-bottom:0.2rem}
+  h3{margin-bottom:0.4rem}
   /* Never split a self-contained block across two pages */
-  .section{break-inside:auto;box-shadow:none}
-  .report-header,.intro-box,.chart-legend,.finding-section,.data-source-section,
+  .section{break-inside:auto}
   .kpi-box,.data-kpi,.chart-container,.chart-container-full,.legend-item{break-inside:avoid}
   .kpi-row,.data-kpi-row,.legend-items{break-inside:avoid}
   .charts-grid,.charts-grid-summary{break-inside:auto}

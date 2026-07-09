@@ -9,9 +9,12 @@ def render_header(domain: str, timestamp: str, query_count: int, run_id: str = "
     o_model = config.openai_model
     g_model = config.gemini_model
     title_prefix = config.report_text.get("title_prefix", "AI Relevancy Report")
+    date_only = timestamp.split()[0] if timestamp else ""
+    period = config.comparison_current_label
+    headline_date = f"{period} ({date_only})" if period else date_only
     return f"""
 <header class="report-header">
-<h1>{title_prefix}: {domain}</h1>
+<h1>{title_prefix}: {domain} - {headline_date}</h1>
 <div class="header-stats">
 <span class="stat-box"><strong>{query_count}</strong> Queries</span>
 <span class="stat-box">OpenAI: <strong>{o_model}</strong></span>
