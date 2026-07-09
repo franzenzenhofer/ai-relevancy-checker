@@ -96,7 +96,10 @@ mark.target-hit{background:var(--highlight);color:var(--primary);padding:0 3px}
 
 /* ===== PRINT / PDF ===== keep blocks intact across page breaks */
 @media print{
-  @page{size:A4;margin:12mm}
+  @page{size:A4 portrait;margin:12mm}
+  /* The wide 17-column results table gets its OWN landscape pages so every
+     column and the full answer text fit - only these pages rotate. */
+  @page detail{size:A4 landscape;margin:8mm}
   html,body{background:#fff}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .report{max-width:none;margin:0;padding:0}
@@ -111,12 +114,40 @@ mark.target-hit{background:var(--highlight);color:var(--primary);padding:0 3px}
   /* Headings stay with the content that follows them */
   h1,h2,h3,h4{break-after:avoid}
   h2{break-before:auto}
-  /* Detailed results table: repeat header, keep each row whole */
+
+  /* --- Detailed results table: landscape, full width, nothing clipped --- */
+  .section-detail{page:detail;break-before:page}
+  .section-detail>div{overflow:visible !important}
+  .query-table{table-layout:fixed;width:100%;font-size:7.5px}
   .query-table thead{display:table-header-group}
   .query-table tr{break-inside:avoid}
-  .query-table th{position:static}
-  /* Expanded answer text can be long - allow it to flow rather than shove a huge gap */
-  .full-text,.collapsible-text{break-inside:auto}
+  .query-table th{position:static;padding:3px 4px;font-size:8px}
+  .query-table td{padding:3px 4px;word-break:break-word;overflow-wrap:anywhere;vertical-align:top}
+  .query-table .domain-list li{padding:0}
+  .query-table .rank-badge{padding:1px 3px}
+  /* Give text-heavy columns the space, squeeze the yes/no/rank columns */
+  .query-table th:nth-child(1),.query-table td:nth-child(1){width:2.5%}   /* # */
+  .query-table th:nth-child(2),.query-table td:nth-child(2){width:8%}     /* Query */
+  .query-table th:nth-child(3),.query-table td:nth-child(3){width:3.5%}   /* Clicks */
+  .query-table th:nth-child(4),.query-table td:nth-child(4){width:4%}     /* Any vis */
+  .query-table th:nth-child(5),.query-table td:nth-child(5){width:15%}    /* Prompt */
+  .query-table th:nth-child(6),.query-table td:nth-child(6){width:15%}    /* OpenAI Answer */
+  .query-table th:nth-child(7),.query-table td:nth-child(7){width:3.5%}   /* OA Brand? */
+  .query-table th:nth-child(8),.query-table td:nth-child(8){width:3.5%}   /* OA URL? */
+  .query-table th:nth-child(9),.query-table td:nth-child(9){width:8%}     /* OA Sources */
+  .query-table th:nth-child(10),.query-table td:nth-child(10){width:3.5%} /* OA Rank */
+  .query-table th:nth-child(11),.query-table td:nth-child(11){width:15%}  /* Gemini Answer */
+  .query-table th:nth-child(12),.query-table td:nth-child(12){width:3.5%} /* Ge Brand? */
+  .query-table th:nth-child(13),.query-table td:nth-child(13){width:3.5%} /* Ge URL? */
+  .query-table th:nth-child(14),.query-table td:nth-child(14){width:8%}   /* Ge Sources */
+  .query-table th:nth-child(15),.query-table td:nth-child(15){width:3.5%} /* Ge Rank */
+  /* Timestamp column is constant across rows - drop it on paper for space */
+  .query-table th:nth-child(16),.query-table td:nth-child(16){display:none}
+  /* Show FULL answer/prompt text - the JS expand buttons don't work on paper */
+  .text-truncated{display:none !important}
+  .text-full{display:block !important}
+  .expand-btn{display:none !important}
+  .full-text,.collapsible-text{break-inside:auto;white-space:pre-wrap}
 }
 """
 
