@@ -97,8 +97,8 @@ def _delta_badge(now_pct: float, prior_pct: float) -> str:
 
 _METRICS = [
     ("answer", "Marke im Antworttext", "Brand named in the AI answer"),
-    ("top5", "Domain in Top-5-Quellen", "example.com ranked in the top-5 sources"),
-    ("top10", "Domain in Top-10-Quellen", "example.com ranked in the top-10 sources"),
+    ("top5", "Domain in Top-5-Quellen", "Domain ranked in the top-5 sources"),
+    ("top10", "Domain in Top-10-Quellen", "Domain ranked in the top-10 sources"),
     ("anyvis", "Sichtbar (Antwort o. Quelle)", "Mentioned in answer OR listed as a source"),
 ]
 
