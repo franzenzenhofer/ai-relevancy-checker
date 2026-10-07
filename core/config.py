@@ -7,6 +7,9 @@ from typing import Any, Dict, List, Optional
 
 from .config_loader import get_env_key, load_dotenv
 
+# GSC OAuth files (team@fullstackoptimization.com), shared by the GSC tools in ~/dev
+GSC_SECRETS_DIR = Path.home() / "dev" / "shared-secrets" / "google-gsc-team"
+
 load_dotenv()
 
 
@@ -323,12 +326,12 @@ class Config:
         self.client_secret_path = (
             Path(self.client_secret_path_override).expanduser().resolve()
             if self.client_secret_path_override
-            else self.parent_dir / "client_secret.json"
+            else GSC_SECRETS_DIR / "client_secret.json"
         )
         self.token_path = (
             Path(self.token_path_override).expanduser().resolve()
             if self.token_path_override
-            else self.parent_dir / "token.json"
+            else GSC_SECRETS_DIR / "token.json"
         )
 
 
